@@ -10,12 +10,21 @@ import { CalendarIcon } from "@heroicons/react/outline";
 import Picker from '@emoji-mart/react'
 
 const Input = () => {
-  const [input, setInput] = useState<number | string>("");
+  const [input, setInput] = useState<string>("");
   const [selected, setSelected] = useState<string | null>();
   const [showEmojis, setShowEmojis] = useState(false);
   const filePickerRef = useRef<HTMLInputElement | null>(null);
 
   const addImageToPost = () => {};
+
+  const addEmoji = (e: { unified: string }) => {
+  const sym: string[] = e.unified.split("-");
+  const codesArray: number[] = sym.map((el) => parseInt("0x" + el, 16));
+  const emoji: string = String.fromCodePoint(...codesArray);
+  setInput((prevInput: string) => prevInput + emoji);
+};
+
+
   return (
     <div
       className={`border-b border-gray-700 p-3 flex space-x-3 overflow-y-scroll`}
@@ -26,7 +35,7 @@ const Input = () => {
         className="h-11 w-11 rounded-full cursor-pointer"
       />
       <div className="w-full divide-y divide-gray-700">
-        <div>
+        <div className={`${selected && "pb-7"} ${input && "space-y-2.5"}`}>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -87,11 +96,11 @@ const Input = () => {
                 maxWidth: "320px",
                 borderRadius: "20px",
               }}>
-              <Picker theme="dark"/>
+              <Picker onEmojiSelect={addEmoji} theme="dark"/>
               </div>
             )}
-            
           </div>
+          <button className="bg-[#1d9bf0] text-white rounded-full px-4 py-1.5 font-bold shadow-md hover:bg-[#1a8cd8] disabled:hover:bg-[#1d9bf0] disabled:opacity-50 disabled:cursor-default" disabled={!input.trim() && !selected}>Tweet</button>
         </div>
       </div>
     </div>
