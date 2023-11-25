@@ -13,6 +13,7 @@
     "@emoji-mart/react": "^1.1.1",
     "@heroicons/react": "^1.0.6",
     "emoji-mart": "^5.5.2",
+    "firebase": "^10.6.0",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18"
