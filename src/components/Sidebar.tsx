@@ -14,8 +14,9 @@ import {
   DotsCircleHorizontalIcon,
   DotsHorizontalIcon,
 } from "@heroicons/react/outline";
-import { signIn, signOut, useSession } from 'next-auth/react';
+import {signOut, useSession } from 'next-auth/react';
 
+declare module 'next-auth' {interface Session {tag: string}}
 
 const Sidebar = () => {
   const { data: session } = useSession();
@@ -49,7 +50,7 @@ const Sidebar = () => {
         />
         <div className="hidden xl:inline leading-5">
           <h4 className="font-bold">{session?.user?.name}</h4>
-          <p className="text-[#6e767d]">@{session?.user?.name?.split(" ").join("").toLocaleLowerCase()}</p>
+          <p className="text-[#6e767d]">@{session?.user?.tag}</p>
         </div>
         <DotsHorizontalIcon className="h-5 hidden xl:inline ml-10" />
       </div>

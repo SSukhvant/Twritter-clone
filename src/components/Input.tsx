@@ -17,6 +17,17 @@ import {
 } from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
+import { useSession } from "next-auth/react";
+import type { DefaultSession } from 'next-auth';
+
+declare module 'next-auth' {
+  interface Session {
+    user: DefaultSession['user'] & {
+      uid: string,
+      tag: string,
+    };
+  }
+}
 
 const Input = () => {
   const [input, setInput] = useState<string>("");
@@ -24,15 +35,16 @@ const Input = () => {
   const [showEmojis, setShowEmojis] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const filePickerRef = useRef<HTMLInputElement | null>(null);
+  const { data: session } = useSession();
 
   const sendPost = async () => {
     if (loading) return;
     setLoading(true);
     const docRef = await addDoc(collection(db, "posts"), {
-      // id: session.user.uid,
-      // username: session.user.name,
-      // userImg: session.user.image,
-      // tag: session.user.tag,
+      id: session?.user?.uid,
+      username: session?.user?.name,
+      userImg: session?.user?.image,
+      tag: session?.user?.tag,
       text: input,
       timestamp: serverTimestamp(),
     });
@@ -80,9 +92,11 @@ const Input = () => {
       }`}
     >
       <Image
-        src={ts}
+        src={session?.user?.image as string}
         alt="user"
         className="h-11 w-11 rounded-full cursor-pointer"
+        height={44}
+        width={44}
       />
       <div className="w-full divide-y divide-gray-700">
         <div className={`${selected && "pb-7"} ${input && "space-y-2.5"}`}>
