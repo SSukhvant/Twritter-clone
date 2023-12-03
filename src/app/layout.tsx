@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { getServerSession } from "next-auth";
 import SessionProvider from "@/provider/SessionProvider";
+import RecoilRoot from "@/recoilroot/RecoilRoot";
 
 // const inter = Inter({ subsets: ["latin"] });
 const roboto = Roboto({
@@ -25,7 +26,11 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <body className={roboto.className}>{children}</body>
+        <body className={roboto.className}>
+          <RecoilRoot>
+            {children}
+          </RecoilRoot>
+        </body>
       </html>
     </SessionProvider>
   );

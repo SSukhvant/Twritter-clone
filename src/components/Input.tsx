@@ -87,7 +87,7 @@ const Input = () => {
 
   return (
     <div
-      className={`border-b border-gray-700 p-3 flex space-x-3 overflow-y-scroll ${
+      className={`border-b border-gray-700 p-3 flex space-x-3 overflow-y-scroll no-scrollbar ${
         loading && "opacity-60"
       }`}
     >
