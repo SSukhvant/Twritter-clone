@@ -15,7 +15,6 @@ const Feed = () => {
     (snapshot) => {
       const postData: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs;
       setPosts(postData);
-      console.log("hi")
     }
    ), [])
   return (

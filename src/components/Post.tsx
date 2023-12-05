@@ -5,23 +5,57 @@ import { SwitchHorizontalIcon } from "@heroicons/react/outline";
 import { ChatIcon } from "@heroicons/react/outline";
 import { TrashIcon } from "@heroicons/react/outline";
 import { DotsHorizontalIcon } from "@heroicons/react/outline";
-import { deleteDoc, doc } from "firebase/firestore";
+import { DocumentData, QueryDocumentSnapshot, collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Moment from "react-moment";
 import { useRecoilState } from "recoil";
 import { db } from "../../firebase";
+import { HeartIcon } from "@heroicons/react/outline";
+import {HeartIcon as HeartIconFilled, ChatIcon as ChatIconFilled} from "@heroicons/react/solid";
 
 const Post = ({ id, post, postPage }: any) => {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [postId, setPostId] = useRecoilState(postIdState);
   const [comments, setComments] = useState([]);
-  const [likes, setLikes] = useState([]);
+  const [likes, setLikes] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
   const [liked, setLiked] = useState(false);
   const router = useRouter();
+
+  useEffect(
+    () =>
+      onSnapshot(collection(db, "posts", id, "likes"), (snapshot) => {
+      const postLikes: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs;
+        setLikes(postLikes)
+}),
+    [db, id]
+  );
+
+  useEffect(
+    () =>
+      setLiked(
+        likes.findIndex((like) => like.id === session?.user?.uid) !== -1
+      ),
+    [likes]
+  );
+
+  const likePost = async () => {
+    if (!session) return;
+    const userId = session.user?.uid;
+    if (!userId) return;
+
+    if (liked) {
+      await deleteDoc(doc(db, "posts", id, "likes", userId));
+    } else {
+      await setDoc(doc(db, "posts", id, "likes", userId), {
+        username: session.user?.name,
+      });
+    }
+  };
+
   return (
     <div className="p-3 flex cursor-pointer border-b border-gray-700" onClick={() => router.push(`/${id}`)}>
       {!postPage && (
@@ -128,7 +162,7 @@ const Post = ({ id, post, postPage }: any) => {
             </div>
           )}
 
-          {/* <div
+          <div
             className="flex items-center space-x-1 group"
             onClick={(e) => {
               e.stopPropagation();
@@ -151,7 +185,7 @@ const Post = ({ id, post, postPage }: any) => {
                 {likes.length}
               </span>
             )}
-          </div> */}
+          </div>
 
           <div className="icon group">
             <ShareIcon className="h-5 group-hover:text-[#1d9bf0]" />
