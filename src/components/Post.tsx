@@ -5,17 +5,22 @@ import { SwitchHorizontalIcon } from "@heroicons/react/outline";
 import { ChatIcon } from "@heroicons/react/outline";
 import { TrashIcon } from "@heroicons/react/outline";
 import { DotsHorizontalIcon } from "@heroicons/react/outline";
+import { deleteDoc, doc } from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import Moment from "react-moment";
 import { useRecoilState } from "recoil";
+import { db } from "../../firebase";
 
 const Post = ({ id, post, postPage }: any) => {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [postId, setPostId] = useRecoilState(postIdState);
   const [comments, setComments] = useState([]);
+  const [likes, setLikes] = useState([]);
+  const [liked, setLiked] = useState(false);
   const router = useRouter();
   return (
     <div className="p-3 flex cursor-pointer border-b border-gray-700" onClick={() => router.push(`/${id}`)}>
@@ -54,7 +59,7 @@ const Post = ({ id, post, postPage }: any) => {
             </div>{" "}
             ·{" "}
             <span className="hover:underline text-sm sm:text-[15px]">
-              {/* <Moment fromNow>{post?.timestamp?.toDate()}</Moment> */}
+              <Moment fromNow>{post?.timestamp?.toDate()}</Moment>
             </span>
             {!postPage && (
               <p className="text-[#d9d9d9] text-[15px] sm:text-base mt-0.5">
@@ -69,13 +74,15 @@ const Post = ({ id, post, postPage }: any) => {
         {postPage && (
           <p className="text-[#d9d9d9] mt-0.5 text-xl">{post?.text}</p>
         )}
-        <Image
-          src={post?.image}
-          alt=""
-          height={200}
-          width={577}
-          className="rounded-2xl max-h-[700px] object-cover mr-2"
-        />
+
+        {post?.image && 
+                <Image
+                src={post?.image}
+                alt=""
+                height={200}
+                width={577}
+                className="rounded-2xl max-h-[700px] object-cover mr-2"
+              />}
 
         <div
           className={`text-[#6e767d] flex justify-between w-10/12 ${
@@ -100,7 +107,7 @@ const Post = ({ id, post, postPage }: any) => {
             )}
           </div>
 
-          {/* {session?.user?.uid === post?.id ? (
+          {session?.user?.uid === post?.id ? (
             <div
               className="flex items-center space-x-1 group"
               onClick={(e) => {
@@ -119,7 +126,7 @@ const Post = ({ id, post, postPage }: any) => {
                 <SwitchHorizontalIcon className="h-5 group-hover:text-green-500" />
               </div>
             </div>
-          )} */}
+          )}
 
           {/* <div
             className="flex items-center space-x-1 group"
