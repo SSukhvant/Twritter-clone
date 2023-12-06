@@ -19,6 +19,7 @@ import {HeartIcon as HeartIconFilled, ChatIcon as ChatIconFilled} from "@heroico
 const Post = ({ id, post, postPage }: any) => {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useRecoilState(modalState);
+  console.log(isOpen)
   const [postId, setPostId] = useRecoilState(postIdState);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
