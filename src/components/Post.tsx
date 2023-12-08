@@ -5,7 +5,17 @@ import { SwitchHorizontalIcon } from "@heroicons/react/outline";
 import { ChatIcon } from "@heroicons/react/outline";
 import { TrashIcon } from "@heroicons/react/outline";
 import { DotsHorizontalIcon } from "@heroicons/react/outline";
-import { DocumentData, QueryDocumentSnapshot, collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
+import {
+  DocumentData,
+  QueryDocumentSnapshot,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  setDoc,
+} from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,24 +24,44 @@ import Moment from "react-moment";
 import { useRecoilState } from "recoil";
 import { db } from "../../firebase";
 import { HeartIcon } from "@heroicons/react/outline";
-import {HeartIcon as HeartIconFilled, ChatIcon as ChatIconFilled} from "@heroicons/react/solid";
+import {
+  HeartIcon as HeartIconFilled,
+  ChatIcon as ChatIconFilled,
+} from "@heroicons/react/solid";
 
 const Post = ({ id, post, postPage }: any) => {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useRecoilState(modalState);
-  console.log(isOpen)
   const [postId, setPostId] = useRecoilState(postIdState);
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<
+    QueryDocumentSnapshot<DocumentData>[]
+  >([]);
   const [likes, setLikes] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
   const [liked, setLiked] = useState(false);
   const router = useRouter();
 
   useEffect(
     () =>
+      onSnapshot(
+        query(
+          collection(db, "posts", id, "comments"),
+          orderBy("timestamp", "desc")
+        ),
+        (snapshot) => {
+          const postComments: QueryDocumentSnapshot<DocumentData>[] =
+            snapshot.docs;
+          setComments(postComments);
+        }
+      ),
+    [db, id]
+  );
+
+  useEffect(
+    () =>
       onSnapshot(collection(db, "posts", id, "likes"), (snapshot) => {
-      const postLikes: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs;
-        setLikes(postLikes)
-}),
+        const postLikes: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs;
+        setLikes(postLikes);
+      }),
     [db, id]
   );
 
@@ -58,7 +88,10 @@ const Post = ({ id, post, postPage }: any) => {
   };
 
   return (
-    <div className="p-3 flex cursor-pointer border-b border-gray-700" onClick={() => router.push(`/${id}`)}>
+    <div
+      className="p-3 flex cursor-pointer border-b border-gray-700"
+      onClick={() => router.push(`/${id}`)}
+    >
       {!postPage && (
         <Image
           src={post?.userImg}
@@ -75,6 +108,8 @@ const Post = ({ id, post, postPage }: any) => {
               src={post?.userImg}
               alt="post"
               className="h-11 w-11 rounded-full mr-4"
+              height={44}
+              width={44}
             />
           )}
           <div className="text-[#6e767d]">
@@ -110,14 +145,16 @@ const Post = ({ id, post, postPage }: any) => {
           <p className="text-[#d9d9d9] mt-0.5 text-xl">{post?.text}</p>
         )}
 
-        {post?.image && 
-                <Image
-                src={post?.image}
-                alt=""
-                height={200}
-                width={577}
-                className="rounded-2xl max-h-[700px] object-cover mr-2"
-              />}
+        {post?.image && (
+          <Image
+            src={post?.image}
+            alt=""
+            height={200}
+            width={577}
+            priority
+            className="rounded-2xl max-h-[700px] object-cover mr-2"
+          />
+        )}
 
         <div
           className={`text-[#6e767d] flex justify-between w-10/12 ${
