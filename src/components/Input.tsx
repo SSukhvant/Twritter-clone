@@ -38,32 +38,46 @@ const Input = () => {
   const { data: session } = useSession();
 
   const sendPost = async () => {
-    if (loading) return;
-    setLoading(true);
-    const docRef = await addDoc(collection(db, "posts"), {
-      id: session?.user?.uid,
-      username: session?.user?.name,
-      userImg: session?.user?.image,
-      tag: session?.user?.tag,
-      text: input,
-      timestamp: serverTimestamp(),
-    });
-    const imageRef = ref(storage, `posts/${docRef.id}/image`);
-
-    if (selected) {
-      await uploadString(imageRef, selected, "data_url").then(async () => {
+    try {
+      if (loading || !session) {
+        setLoading(false); // Make sure to set loading to false if the function returns early.
+        return;
+      }
+  
+      setLoading(true);
+  
+      const { uid, name, image, tag } = session.user;
+  
+      // Create a new post document
+      const docRef = await addDoc(collection(db, "posts"), {
+        id: uid,
+        username: name,
+        userImg: image,
+        tag: tag,
+        text: input,
+        timestamp: serverTimestamp(),
+      });
+  
+      // If an image is selected, upload it to storage and update the post document
+      if (selected) {
+        const imageRef = ref(storage, `posts/${docRef.id}/image`);
+        await uploadString(imageRef, selected, "data_url");
         const downloadURL = await getDownloadURL(imageRef);
         await updateDoc(doc(db, "posts", docRef.id), {
           image: downloadURL,
         });
-      });
+      }
+  
+      setLoading(false);
+      setInput("");
+      setSelected(null);
+      setShowEmojis(false);
+    } catch (error) {
+      console.error("Error sending post:", error);
+      setLoading(false);
     }
-
-    setLoading(false);
-    setInput("");
-    setSelected(null);
-    setShowEmojis(false);
   };
+  
 
   const addImageToPost = (e: React.ChangeEvent<HTMLInputElement>) => {
     const reader = new FileReader();
