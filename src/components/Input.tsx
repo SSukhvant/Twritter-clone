@@ -39,8 +39,9 @@ const Input = () => {
 
   const sendPost = async () => {
     try {
-      if (loading || !session) {
-        setLoading(false); // Make sure to set loading to false if the function returns early.
+      if (loading || !session || !session.user || !session.user.uid) {
+        console.error("Invalid session or missing user UID.");
+        setLoading(false);
         return;
       }
   
@@ -48,13 +49,18 @@ const Input = () => {
   
       const { uid, name, image, tag } = session.user;
   
+      // Check for undefined or null values and provide defaults if needed
+      const username = name || "DefaultUsername";
+      const userImg = image || "DefaultImageURL";
+      const tagValue = tag || "DefaultTag";
+  
       // Create a new post document
       const docRef = await addDoc(collection(db, "posts"), {
         id: uid,
-        username: name,
-        userImg: image,
-        tag: tag,
-        text: input,
+        username: username,
+        userImg: userImg,
+        tag: tagValue,
+        text: input || "", // Provide a default value for input if it's undefined
         timestamp: serverTimestamp(),
       });
   
@@ -77,6 +83,7 @@ const Input = () => {
       setLoading(false);
     }
   };
+  
   
 
   const addImageToPost = (e: React.ChangeEvent<HTMLInputElement>) => {
