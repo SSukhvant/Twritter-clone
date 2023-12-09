@@ -47,7 +47,7 @@ const Input = () => {
   
       setLoading(true);
   
-      const { uid, name, image, tag } = session.user;
+      const { uid, name, image, tag } = session?.user;
   
       // Check for undefined or null values and provide defaults if needed
       const username = name || "DefaultUsername";
